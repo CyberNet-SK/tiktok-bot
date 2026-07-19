@@ -1,9 +1,7 @@
 import requests
-import json
-import time
 import re
-import os
-from config import CLIENT_KEY, CLIENT_SECRET, API_TIMEOUT
+import time
+from config import CLIENT_KEY, CLIENT_SECRET
 
 class TikTokAPI:
     def __init__(self):
@@ -13,7 +11,6 @@ class TikTokAPI:
         self.token_expiry = 0
 
     def get_access_token(self):
-        """অফিসিয়াল TikTok API থেকে অ্যাক্সেস টোকেন নেওয়া"""
         if self.access_token and time.time() < self.token_expiry:
             return self.access_token
 
@@ -26,7 +23,7 @@ class TikTokAPI:
         headers = {"Content-Type": "application/json"}
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=API_TIMEOUT)
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
             if response.status_code == 200:
                 data = response.json()
                 if data.get('code') == 0:
@@ -38,7 +35,6 @@ class TikTokAPI:
             return None
 
     def extract_video_id(self, url):
-        """TikTok URL থেকে ভিডিও আইডি বের করা"""
         patterns = [
             r'(?:tiktok\.com/.*?/video/)(\d+)',
             r'(?:tiktok\.com/@.*?/video/)(\d+)',
@@ -51,16 +47,14 @@ class TikTokAPI:
         return None
 
     def get_video_data(self, url):
-        """অফিসিয়াল API দিয়ে ভিডিও ডেটা আনা (ব্যাকআপ সহ)"""
         video_id = self.extract_video_id(url)
         if not video_id:
             return {'success': False, 'error': 'ভিডিও আইডি খুঁজে পাওয়া যায়নি'}
 
         token = self.get_access_token()
         if not token:
-            return self.fallback_download(url)  # ব্যাকআপ
+            return self.fallback_download(url)
 
-        # অফিসিয়াল API কল
         api_url = "https://open-api.tiktok.com/video/list/"
         params = {
             "client_key": self.client_key,
@@ -69,7 +63,7 @@ class TikTokAPI:
         }
 
         try:
-            response = requests.get(api_url, params=params, timeout=API_TIMEOUT)
+            response = requests.get(api_url, params=params, timeout=30)
             if response.status_code == 200:
                 data = response.json()
                 if data.get('code') == 0 and data.get('data', {}).get('videos'):
@@ -85,14 +79,12 @@ class TikTokAPI:
         except Exception:
             pass
 
-        # ব্যাকআপ (যদি অফিসিয়াল ফেইল করে)
         return self.fallback_download(url)
 
     def fallback_download(self, url):
-        """ব্যাকআপ: ফ্রি থার্ড-পার্টি API ব্যবহার"""
         try:
             api_url = f"https://www.tikwm.com/api/?url={url}"
-            response = requests.get(api_url, timeout=API_TIMEOUT)
+            response = requests.get(api_url, timeout=30)
             if response.status_code == 200:
                 data = response.json()
                 if data.get('code') == 0:
@@ -110,10 +102,16 @@ class TikTokAPI:
             return {'success': False, 'error': str(e)}
 
     def download_video_file(self, url, save_path='temp_video.mp4'):
-        """ভিডিও ফাইল ডাউনলোড করে সেভ করা"""
         try:
-            response = requests.get(url, stream=True, timeout=API_TIMEOUT)
+            response = requests.get(url, stream=True, timeout=30)
             if response.status_code == 200:
+                with open(save_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                return True
+            return False
+        except Exception:
+            return False            if response.status_code == 200:
                 with open(save_path, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
