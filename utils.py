@@ -38,7 +38,8 @@ class TikTokAPI:
         patterns = [
             r'(?:tiktok\.com/.*?/video/)(\d+)',
             r'(?:tiktok\.com/@.*?/video/)(\d+)',
-            r'(?:vm\.tiktok\.com/.*?/)(\d+)'
+            r'(?:vm\.tiktok\.com/.*?/)(\d+)',
+            r'(?:vt\.tiktok\.com/.*?/)(\d+)'  # শর্ট লিংক সাপোর্ট
         ]
         for pattern in patterns:
             match = re.search(pattern, url)
