@@ -1,10 +1,6 @@
-# ==================== কনফিগারেশন ====================
-BOT_TOKEN = "8896293537:AAEekBMn7QJjG6--RlGKNPSO8f4fOHloxeI"
-ADMIN_CHAT_ID = 7819937011
+import os
 
-# TikTok Official API Credentials (আপনার দেওয়া)
-CLIENT_KEY = "awuq3kty521wo5ku"
-CLIENT_SECRET = "SybaAKVxTHMw2SuEMPCOwmW2rmY8eZry"
-
-# API টাইমআউট
-API_TIMEOUT = 30
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CLIENT_KEY = os.environ.get("CLIENT_KEY")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+ADMIN_CHAT_ID = os.environ.get("ADMIN_CHAT_ID")
